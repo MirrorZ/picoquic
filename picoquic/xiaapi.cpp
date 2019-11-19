@@ -34,6 +34,51 @@ extern "C" {
 #define ROUTER_CONTROL_PORT "ROUTER_CONTROL_PORT"
 #define ROUTER_IFACE "ROUTER_IFACE"
 
+int picoquic_xia_socket(std::string ifname)
+{
+    // Get the interface addresses for this system
+    struct ifaddrs* ifap;
+    if(getifaddrs(&ifap)) {
+        std::cout << "ERROR getting local interface addresses" << std::endl;
+        return -1;
+    }
+
+    // Convert 'ifap' into a smart pointer 'addrs'
+    // freeifaddrs() called automatically when 'addrs' goes out of scope
+    std::unique_ptr<struct ifaddrs, decltype(&freeifaddrs)> addrs(
+            ifap, &freeifaddrs);
+
+    struct ifaddrs* ifa;
+    struct sockaddr_in* sa;
+    for(ifa = addrs.get(); ifa; ifa = ifa->ifa_next) {
+        if(ifa->ifa_addr->sa_family == AF_INET) {
+            sa = (struct sockaddr_in*) ifa->ifa_addr;
+            if(strncmp(ifa->ifa_name, ifname.c_str(), ifname.length()) == 0) {
+                printf("Iface: %s Address: %s\n", ifa->ifa_name,
+                    inet_ntoa(sa->sin_addr));
+                break;
+            }
+           
+        }
+    }
+    if(ifa == NULL) {
+        std::cout << "ERROR couldn't find the interface address" << std::endl;
+        return -1;
+    }
+    // 'sa' now points to a valid local address
+    // Bind to a random port
+    int sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    if(sockfd == -1) {
+        return -1;
+    }
+    if(bind(sockfd, (struct sockaddr*) sa, sizeof(sockaddr_in))) {
+        std::cout << "ERROR binding to a port" << std::endl;
+        return -1;
+    }
+    std::cout<<"Hmm";
+    return sockfd;
+}
+
 int picoquic_xia_socket()
 {
     // Get the interface addresses for this system
@@ -165,6 +210,7 @@ void xidToLocalDAG (const char* xid, GraphPtr& addr)
     auto our_addr = conf.get(OUR_ADDR);
     std::string xidstr(xid);
     std::string xiaaddrstr = our_addr +  " " + xidstr;
+    std::cout<<"xid "<<xid<<" our_addr "<<our_addr<<" "<<"xidstr "<<xidstr<<std::endl;
     std::cout << "Our address: " << xiaaddrstr << std::endl;
     addr.reset(new Graph(xiaaddrstr));
 }
@@ -284,6 +330,35 @@ int picoquic_xia_unserve_aid(const char* aid)
 //
 // Returns socket descriptor and our local address, on Success
 // Returns -1, on Failure
+int picoquic_xia_open_server_socket(const char* aid, GraphPtr& my_addr, std::string ifname)
+{
+    // Open a socket and bind to a random local port
+    int sockfd = picoquic_xia_socket(ifname);
+    if(sockfd == -1) {
+        std::cout << "ERROR creating bound socket" << std::endl;
+        return -1;
+    }
+
+    // Find out the address:port that we bound to
+    auto bound_ip_addr = getIPAddressFromSocket(sockfd);
+    if (bound_ip_addr == nullptr) {
+        return -1;
+    }
+
+    // Fill my_addr with our local DAG corresponding to given aid
+    aidToLocalDAG(aid, my_addr);
+
+    // Build a bin/xroute command to be sent to router
+    std::string cmd = buildRouteCommandForAID(aid, *bound_ip_addr);
+
+    // Send command to configure route from router to this socket for aid
+    if(_send_server_cmd(cmd)) {
+        std::cout << "ERROR configuring route to " << aid << std::endl;
+        return -1;
+    }
+    return sockfd;
+}
+
 int picoquic_xia_open_server_socket(const char* aid, GraphPtr& my_addr)
 {
     // Open a socket and bind to a random local port

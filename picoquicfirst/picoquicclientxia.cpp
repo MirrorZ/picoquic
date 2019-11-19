@@ -22,6 +22,7 @@ extern "C" {
 #define CLIENT_AID "CLIENT_AID" // The CLIENT_AID entry in config file
 #define SERVER_AID "SERVER_AID" // The SERVER_AID entry in config file
 #define TICKET_STORE "TICKET_STORE"
+#define IFNAME "IFNAME"
 
 // If there were multiple streams, we would track progress for them here
 struct callback_context_t {
@@ -157,6 +158,7 @@ int main()
 	auto server_addr = conf.get(THEIR_ADDR);
 	auto server_aid = conf.get(SERVER_AID);
 	auto client_aid = conf.get(CLIENT_AID);
+	std::string client_ifname = conf.get(IFNAME);
 	const auto ticket_store_filename = conf.get(TICKET_STORE);
 	GraphPtr mydag;
 	sockaddr_x my_address;
@@ -179,7 +181,7 @@ int main()
 
 	// A socket to talk to server on
 	//sockfd = socket(server_address.ss_family, SOCK_DGRAM, IPPROTO_UDP);
-	sockfd = picoquic_xia_open_server_socket(client_aid.c_str(), mydag);
+	sockfd = picoquic_xia_open_server_socket(client_aid.c_str(), mydag, client_ifname);
 	if(sockfd == INVALID_SOCKET) {
 		goto client_done;
 	}

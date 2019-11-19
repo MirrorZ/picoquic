@@ -18,6 +18,7 @@ extern "C" {
 
 #define CONFFILE "local.conf"
 #define SERVER_AID "SERVER_AID"
+#define IFNAME "IFNAME"
 
 void print_address(struct sockaddr* address, char* label)
 {
@@ -157,9 +158,11 @@ int main()
 
 	auto conf = LocalConfig::get_instance(CONFFILE);
 	auto server_aid = conf.get(SERVER_AID);
+	std::string server_ifname = conf.get(IFNAME);
 	
 	// We give a fictitious AID for now, and get a dag in my_addr
-	sockfd = picoquic_xia_open_server_socket(server_aid.c_str(), my_addr);
+	std::cout<<"Xia open server"<<std::endl;
+	sockfd = picoquic_xia_open_server_socket(server_aid.c_str(), my_addr, server_ifname);
 	if(sockfd == -1) {
 		printf("ERROR creating xia server socket\n");
 		return -1;
