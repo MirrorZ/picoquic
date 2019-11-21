@@ -1,3 +1,4 @@
+
 #include "localconfig.hpp"
 
 #include <algorithm>
@@ -147,7 +148,7 @@ int LocalConfig::configure(std:: string control_port, std::string control_addr, 
  	return -1;
  }
 
- std::cout<<"Bound"<<std::endl;
+ std::cout<<"Bound on"<<sock_fd<<std::endl;
  //freeaddrinfo(res);
  //std::cout<<"freeaddrinfo"<<std::endl;
 
@@ -157,7 +158,9 @@ int LocalConfig::configure(std:: string control_port, std::string control_addr, 
  // 	return -1;
  // }
  // 
- config_controller();
+ void *ret = config_controller();
+ if(!ret)
+   return -1;
 
  return 0;
 }
@@ -171,16 +174,17 @@ void *LocalConfig::config_controller()
 	char buf[512];
 	new_fd = accept(this->control_socket, (struct sockaddr *)&their_addr, 
 		&addr_size);
+	std::cout<<"on "<<this->control_socket<<" new_fd "<<new_fd<<std::endl;
 	if(recv(new_fd, buf, 512, 0) < 0)
  	{
  		printf("Recv failed\n");
- 		return (void *)-1;
+ 		return NULL;
  	}
  	printf("Recvd %s", buf);
  	std::string s = buf;
  	configmessage::Config myconfig;
  	myconfig.ParseFromString(s);
- 	return NULL;
+ 	return (void *)1;
 
  	exit(0);
 }
