@@ -1,4 +1,3 @@
-
 #include "localconfig.hpp"
 
 #include <algorithm>
@@ -158,11 +157,9 @@ int LocalConfig::configure(std:: string control_port, std::string control_addr, 
  // 	return -1;
  // }
  // 
- void *ret = config_controller();
- if(!ret)
-   return -1;
+ int ret = config_controller();
 
- return 0;
+ return ret;
 }
 
 void *LocalConfig::config_controller()
@@ -175,16 +172,26 @@ void *LocalConfig::config_controller()
 	new_fd = accept(this->control_socket, (struct sockaddr *)&their_addr, 
 		&addr_size);
 	std::cout<<"on "<<this->control_socket<<" new_fd "<<new_fd<<std::endl;
-	if(recv(new_fd, buf, 512, 0) < 0)
+	if(recv(new_fd, buf, 1024, 0) < 0)
  	{
  		printf("Recv failed\n");
- 		return NULL;
+ 		switch(errno)
+ 		{
+ 			case EAGAIN : std::cout<<"EAGAIN"<<std::endl; exit(1);
+ 			case EBADF : std::cout<<"EBADF"<<std::endl; exit(1);
+ 			case ECONNREFUSED : std::cout<<"ECONNREFUSED"<<std::endl; exit(1);
+  			case EFAULT : std::cout<<"EFAULT"<<std::endl; exit(1);
+  			case EINTR : std::cout<<"EINTR"<<std::endl; exit(1);
+   			case EINVAL : std::cout<<"EINVAL"<<std::endl; exit(1);
+   			default : std::cout<<"Something else"<<std::endl; exit(1);
+ 		}
+ 		return (void *)-1;
  	}
  	printf("Recvd %s", buf);
  	std::string s = buf;
  	configmessage::Config myconfig;
  	myconfig.ParseFromString(s);
- 	return (void *)1;
+ 	return NULL;
 
  	exit(0);
 }
