@@ -146,7 +146,8 @@ set(DAG_LIBRARY ${XIADIR}/api/lib/libdagaddr.so)
 target_link_libraries(picoquicxia ${PROTOBUF_LIBRARY} ${DAG_LIBRARY})
 include_directories(picoquicxia ${XIADIR}/api/include)
 
-add_library(localconfig ${LOCAL_CONFIG_FILES})
+add_library(localconfig ${LOCAL_CONFIG_FILES}
+    ${ProtoSources} ${ProtoHeaders})
 
 add_library(picoquic-core
     ${PICOQUIC_LIBRARY_FILES}
@@ -183,6 +184,7 @@ target_link_libraries(picoquicclientxia picoquic-core picoquicxia
 	localconfig
 	${PTLS_LIBRARIES}
 	${OPENSSL_LIBRARIES}
+    ${PROTOBUF_LIBRARY}
 	${CMAKE_DL_LIBS}
 )
 include_directories(picoquicclientxia ${XIADIR}/api/include)
@@ -207,6 +209,7 @@ target_link_libraries(picoquicserverxia picoquic-core picoquicxia
 	localconfig
 	${PTLS_LIBRARIES}
 	${OPENSSL_LIBRARIES}
+    ${PROTOBUF_LIBRARY}
 	${CMAKE_DL_LIBS}
 )
 include_directories(picoquicserverxia ${XIADIR}/api/include)

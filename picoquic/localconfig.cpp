@@ -15,9 +15,7 @@
 #include <netdb.h>
 #include <errno.h>
 
-#define handle_error(msg) \
-   do { perror(msg); exit(EXIT_FAILURE); } while (0)
-
+#include "configmessage.pb.h"
 
 // XIA support
 #include "xiaapi.hpp"
@@ -179,6 +177,9 @@ void *LocalConfig::config_controller()
  		return (void *)-1;
  	}
  	printf("Recvd %s", buf);
+ 	std::string s = buf;
+ 	configmessage::Config myconfig;
+ 	myconfig.ParseFromString(s);
  	return NULL;
 
  	exit(0);
