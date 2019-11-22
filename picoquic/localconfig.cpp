@@ -99,6 +99,20 @@ int LocalConfig::configure(std:: string control_port, std::string control_addr, 
  struct addrinfo hints, *res, *rp;
  int sock_fd;
 
+ 	configmessage::Config c;
+        c.set_name("c");
+        c.set_ipaddr("10.0.0.1");
+        c.set_iface("ens1");
+        c.set_port("8792");
+        c.set_ad("dd");
+        c.set_hid("dd2");
+	std::string se;
+	c.SerializeToString(&se);
+	write(1, se.c_str(), se.length());
+	std::cout<<std::endl;
+	configmessage::Config c1;
+	c1.ParseFromString(se);
+
  struct sockaddr_in saddr;
 
   /* Create a socket file descriptor */
@@ -190,18 +204,6 @@ void *LocalConfig::config_controller()
 	}
 	std::cout<<"on "<<this->control_socket<<" new_fd "<<new_fd<<std::endl;
 	int x;
-	configmessage::Config c;
-        c.name = "c";
-        c.ipaddr = "10.0.0.1";
-        c.iface = "ens1";
-        c.port = "8792";
-        c.AD = "dd";
-        c.HID = "dd2";
-	std::string se;
-	c.SerializeToString(&se);
-	std::cout<<se<<std::endl;
-	configmessage::Config c1;
-	c1.ParseFromString(se);
 	if((x = recv(new_fd, buf, 1024, 0)) < 0)
  	{
  		switch(errno)
