@@ -198,7 +198,7 @@ void *LocalConfig::config_controller()
   			case EFAULT : std::cout<<"EFAULT"<<std::endl; exit(1);
   			case EINTR : std::cout<<"EINTR"<<std::endl; exit(1);
    			case EINVAL : std::cout<<"EINVAL"<<std::endl; exit(1);
-   			default : std::cout<<"Something else"<<std::endl; exit(1);
+   			default : std::cout<<"new fd Something else"<<std::endl; exit(1);
  		}
 
 	}
@@ -215,9 +215,9 @@ void *LocalConfig::config_controller()
   			case EINTR : std::cout<<"EINTR"<<std::endl; exit(1);
    			case EINVAL : std::cout<<"EINVAL"<<std::endl; exit(1);
    			case ENOMEM : std::cout<<"ENOMEM"<<std::endl; exit(1);
-     			case ENOTCONN : std::cout<<"ENOTCONN"<<std::endl; exit(1);
+     		case ENOTCONN : std::cout<<"ENOTCONN"<<std::endl; exit(1);
    			case ENOTSOCK : std::cout<<"ENOTSOCK"<<std::endl; exit(1);		       
-   			default : std::cout<<"Something else"<<std::endl; exit(1);
+   			default : std::cout<<"Something else "<<x<<std::endl; exit(1);
  		}
  		printf("Recv failed\n");
  		return NULL;
