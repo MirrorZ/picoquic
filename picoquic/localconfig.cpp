@@ -222,10 +222,10 @@ void *LocalConfig::config_controller()
  		printf("Recv failed\n");
  		return NULL;
  	}
-
-	std::cout<<std::endl;
 	write(1, buf, x);
- 	std::string s = std::string(buf);
+ 	std::string s;
+ 	while(buf[i])
+ 		s.append(buf[i++]);
  	std::cout<<"Length is "<<s.length()<<std::endl;
  	configmessage::Config myconfig;
  	myconfig.ParseFromString(s);
