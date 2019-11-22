@@ -186,6 +186,7 @@ void *LocalConfig::config_controller()
 	socklen_t addr_size = sizeof(struct sockaddr);
 	int new_fd;
 	char buf[256];
+	bzero(buf, 256);
 	new_fd = accept(this->control_socket, (struct sockaddr *)&their_addr, 
 		&addr_size);
 	if(new_fd < 0)
@@ -203,8 +204,8 @@ void *LocalConfig::config_controller()
 
 	}
 	std::cout<<"on "<<this->control_socket<<" new_fd "<<new_fd<<std::endl;
-	int x = recv(new_fd, buf, 256, 0);
-	if(x < 0)
+	int y = recv(new_fd, buf, 256, 0);
+	if(y < 0)
  	{
  		switch(errno)
  		{
@@ -215,17 +216,18 @@ void *LocalConfig::config_controller()
   			case EINTR : std::cout<<"EINTR"<<std::endl; exit(1);
    			case EINVAL : std::cout<<"EINVAL"<<std::endl; exit(1);
    			case ENOMEM : std::cout<<"ENOMEM"<<std::endl; exit(1);
-     		case ENOTCONN : std::cout<<"ENOTCONN"<<std::endl; exit(1);
+     		        case ENOTCONN : std::cout<<"ENOTCONN"<<std::endl; exit(1);
    			case ENOTSOCK : std::cout<<"ENOTSOCK"<<std::endl; exit(1);		       
-   			default : std::cout<<"Something else "<<x<<std::endl; exit(1);
+   			default : std::cout<<"Something else "<<y<<std::endl; exit(1);
  		}
  		printf("Recv failed\n");
  		return NULL;
  	}
-	write(1, buf, x);
+	write(1, buf, y);
  	std::string s;
- 	while(buf[i])
- 		s.append(buf[i++]);
+	int i=0;
+ 	while(i<y)
+ 		s.push_back(buf[i++]);
  	std::cout<<"Length is "<<s.length()<<std::endl;
  	configmessage::Config myconfig;
  	myconfig.ParseFromString(s);
