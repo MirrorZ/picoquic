@@ -1,3 +1,4 @@
+
 #include "localconfig.hpp"
 
 #include <algorithm>
@@ -157,24 +158,52 @@ int LocalConfig::configure(std:: string control_port, std::string control_addr, 
  // 	return -1;
  // }
  // 
- int ret = config_controller();
+ void *ret = config_controller();
+ if(!ret)
+   return -1;
 
- return ret;
+ return 0;
 }
 
 void *LocalConfig::config_controller()
 {
 	std::cout<<"In config controller"<<std::endl;
 	struct sockaddr_storage their_addr;
-	socklen_t addr_size;
+	socklen_t addr_size = sizeof(struct sockaddr);
 	int new_fd;
 	char buf[512];
 	new_fd = accept(this->control_socket, (struct sockaddr *)&their_addr, 
 		&addr_size);
+	if(new_fd < 0)
+	{
+	   		switch(errno)
+ 		{
+ 			case EAGAIN : std::cout<<"EAGAIN"<<std::endl; exit(1);
+ 			case EBADF : std::cout<<"EBADF"<<std::endl; exit(1);
+ 			case ECONNREFUSED : std::cout<<"ECONNREFUSED"<<std::endl; exit(1);
+  			case EFAULT : std::cout<<"EFAULT"<<std::endl; exit(1);
+  			case EINTR : std::cout<<"EINTR"<<std::endl; exit(1);
+   			case EINVAL : std::cout<<"EINVAL"<<std::endl; exit(1);
+   			default : std::cout<<"Something else"<<std::endl; exit(1);
+ 		}
+
+	}
 	std::cout<<"on "<<this->control_socket<<" new_fd "<<new_fd<<std::endl;
-	if(recv(new_fd, buf, 1024, 0) < 0)
+	int x;
+	configmessage::Config c;
+        c.name = "c";
+        c.ipaddr = "10.0.0.1";
+        c.iface = "ens1";
+        c.port = "8792";
+        c.AD = "dd";
+        c.HID = "dd2";
+	std::string se;
+	c.SerializeToString(&se);
+	std::cout<<se<<std::endl;
+	configmessage::Config c1;
+	c1.ParseFromString(se);
+	if((x = recv(new_fd, buf, 1024, 0)) < 0)
  	{
- 		printf("Recv failed\n");
  		switch(errno)
  		{
  			case EAGAIN : std::cout<<"EAGAIN"<<std::endl; exit(1);
@@ -185,10 +214,12 @@ void *LocalConfig::config_controller()
    			case EINVAL : std::cout<<"EINVAL"<<std::endl; exit(1);
    			default : std::cout<<"Something else"<<std::endl; exit(1);
  		}
- 		return (void *)-1;
+ 		printf("Recv failed\n");
+ 		return NULL;
  	}
- 	printf("Recvd %s", buf);
  	std::string s = buf;
+	write(1, buf, x);
+	scanf("%d", &x);
  	configmessage::Config myconfig;
  	myconfig.ParseFromString(s);
  	return NULL;
