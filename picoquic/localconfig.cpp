@@ -204,7 +204,7 @@ void *LocalConfig::config_controller()
 	}
 	std::cout<<"on "<<this->control_socket<<" new_fd "<<new_fd<<std::endl;
 	int x = recv(new_fd, buf, 256, 0);
-	if(x < 0);
+	if(x < 0)
  	{
  		switch(errno)
  		{
@@ -222,12 +222,10 @@ void *LocalConfig::config_controller()
  		printf("Recv failed\n");
  		return NULL;
  	}
-	write(1, buf, 4);
+
 	std::cout<<std::endl;
 	write(1, buf, x);
-	exit(1);
- 	std::string s;
-	s = buf;
+ 	std::string s = std::string(buf);
  	std::cout<<"Length is "<<s.length()<<std::endl;
  	configmessage::Config myconfig;
  	myconfig.ParseFromString(s);
