@@ -27,6 +27,7 @@ class LocalConfig {
         std::string get(const std::string& param);
         int configure(std::string control_port, std::string control_addr, addr_info_t &addr);
 		void *config_controller();
+		void set_aid(std::string aid);
 		std::string get_raddr();
 		std::string get_rport();
 		std::string get_our_addr();
@@ -41,6 +42,7 @@ class LocalConfig {
         std::unordered_map<std::string, std::string> _conf;
         int control_socket;
         pthread_t control_thread;
+        std::string aid;
         addr_info_t *router_addr;
         std::string _name;
         // my interface with the router

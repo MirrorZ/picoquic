@@ -98,21 +98,6 @@ int LocalConfig::configure(std:: string control_port, std::string control_addr, 
  std::cout<<control_port<<std::endl;
  struct addrinfo hints, *res, *rp;
  int sock_fd;
-
- 	configmessage::Config c;
-        c.set_name("c");
-        c.set_ipaddr("10.0.0.1");
-        c.set_iface("ens1");
-        c.set_port("8792");
-        c.set_ad("dd");
-        c.set_hid("dd2");
-	std::string se;
-	c.SerializeToString(&se);
-	write(1, se.c_str(), se.length());
-	std::cout<<std::endl;
-	configmessage::Config c1;
-	c1.ParseFromString(se);
-
  struct sockaddr_in saddr;
 
   /* Create a socket file descriptor */
@@ -165,7 +150,6 @@ int LocalConfig::configure(std:: string control_port, std::string control_addr, 
  this->router_addr = &addr;
 
  std::cout<<"Bound on"<<sock_fd<<std::endl;
- std::cout<<"Setting addr "<<this->router_addr<<std::endl;
  //freeaddrinfo(res);
  //std::cout<<"freeaddrinfo"<<std::endl;
 
@@ -234,9 +218,18 @@ void *LocalConfig::config_controller()
  	myconfig.ParseFromString(s);
  	set_config(myconfig);
 
-
-
+ 	router_addr->sockfd = picoquic_xia_open_server_socket(this->aid.c_str(), router_addr->dag,
+ 		this->_iface, *this);
+ 	if(router_addr->sockfd < 0)
+ 		return NULL;
+ 	router_addr->dag->fill_sockaddr(&router_addr->addr);
+ 	router_addr->addrlen = sizeof(sockaddr_x);
  	return (void *)1;
+}
+
+void LocalConfig::set_aid(std::string aid)
+{
+	this->aid = aid;
 }
 
 void LocalConfig::set_config(configmessage::Config myconfig)

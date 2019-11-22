@@ -25,6 +25,7 @@ extern "C" {
 #define CONTROL_PORT "8295"
 #define CONTROL_IP "10.0.1.130"
 
+std::string MY_AID = "AID:69a4e068880cd40549405dfda6e794b0c7fdf195";
 std::string SERVER_AID = "AID:69a4e068880cd40549405dfda6e794b0c7fdf192";
 std::string SERVER_ADDR = "RE AD:04f61c792990ec39f0af16c6a7c35b6807a61a63 HID:691b1cb51735f5dbbe42282b68e34f96cbfa39b2";
 
@@ -170,7 +171,7 @@ int main()
 	LocalConfig conf;
 	addr_info_t myaddr;
 	std::string ticket_store_filename;
-	std::cout<<"Sending myaddr "<<&myaddr<<std::endl;
+	conf.set_aid(MY_AID);
 	if(conf.configure(CONTROL_PORT, CONTROL_IP, myaddr) < 0)
 	{
 		goto client_done;
