@@ -162,7 +162,10 @@ int LocalConfig::configure(std:: string control_port, std::string control_addr, 
  	return -1;
  }
 
+ this->router_addr = &addr;
+
  std::cout<<"Bound on"<<sock_fd<<std::endl;
+ std::cout<<"Setting addr "<<this->router_addr<<std::endl;
  //freeaddrinfo(res);
  //std::cout<<"freeaddrinfo"<<std::endl;
 
@@ -230,19 +233,20 @@ void *LocalConfig::config_controller()
  	configmessage::Config myconfig;
  	myconfig.ParseFromString(s);
  	set_config(myconfig);
- 	return NULL;
 
- 	exit(0);
+
+
+ 	return (void *)1;
 }
 
 void LocalConfig::set_config(configmessage::Config myconfig)
 {
 	this->_name = myconfig.name();
-	this->_ipaddr = myconfig.ipaddr();
-	this->_iface = myconfig,iface();
-	this->_port = myconfig.port();
-	this->_ad = myconfig.ad();
-	this->_hid = myconfig.hid();
+	this->_r_addr = myconfig.ipaddr();
+	this->_iface = myconfig.iface();
+	this->_r_port = myconfig.port();
+	this->_r_ad = myconfig.ad();
+	this->_r_hid = myconfig.hid();
 }
 
 std::string LocalConfig::get_raddr()

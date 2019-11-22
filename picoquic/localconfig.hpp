@@ -9,7 +9,9 @@
 #include "xiaapi.hpp"
 #include "dagaddr.hpp"
 
-typedef struct addr_info_t {
+#include "configmessage.pb.h"
+
+struct addr_info_t {
 	int sockfd;
 	GraphPtr dag;
 	sockaddr_x addr;
@@ -35,12 +37,11 @@ class LocalConfig {
     private:
         LocalConfig(const std::string& confFile);
 		void stripInputLine(std::string& line);
-		void LocalConfig::set_config(configmessage::Config myconfig);
+		void set_config(configmessage::Config myconfig);
         std::unordered_map<std::string, std::string> _conf;
         int control_socket;
         pthread_t control_thread;
-        GraphPtr mydag;
-        sockaddr_x *saddr;
+        addr_info_t *router_addr;
         std::string _name;
         // my interface with the router
         std::string _iface;

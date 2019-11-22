@@ -170,6 +170,7 @@ int main()
 	LocalConfig conf;
 	addr_info_t myaddr;
 	std::string ticket_store_filename;
+	std::cout<<"Sending myaddr "<<&myaddr<<std::endl;
 	if(conf.configure(CONTROL_PORT, CONTROL_IP, myaddr) < 0)
 	{
 		goto client_done;
