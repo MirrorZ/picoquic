@@ -225,12 +225,13 @@ void *LocalConfig::config_controller()
  	}
 	write(1, buf, y);
  	std::string s;
-	int i=0;
+	int i=4;
  	while(i<y)
  		s.push_back(buf[i++]);
  	std::cout<<"Length is "<<s.length()<<std::endl;
  	configmessage::Config myconfig;
  	myconfig.ParseFromString(s);
+	std::cout<<myconfig.name();
  	return NULL;
 
  	exit(0);
