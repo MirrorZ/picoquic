@@ -220,6 +220,7 @@ void *LocalConfig::config_controller()
  		return NULL;
  	}
  	std::string s = buf;
+ 	std::cout<<"Length is "<<s.length<<std::endl;
 	write(1, buf, x);
 	scanf("%d", &x);
  	configmessage::Config myconfig;
