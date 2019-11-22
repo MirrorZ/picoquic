@@ -203,9 +203,8 @@ void *LocalConfig::config_controller()
  		}
 
 	}
-	std::cout<<"on "<<this->control_socket<<" new_fd "<<new_fd<<std::endl;
-	int y = recv(new_fd, buf, 256, 0);
-	if(y < 0)
+	int bytes_recvd = recv(new_fd, buf, 256, 0);
+	if(bytes_recvd < 0)
  	{
  		switch(errno)
  		{
@@ -218,38 +217,47 @@ void *LocalConfig::config_controller()
    			case ENOMEM : std::cout<<"ENOMEM"<<std::endl; exit(1);
      		        case ENOTCONN : std::cout<<"ENOTCONN"<<std::endl; exit(1);
    			case ENOTSOCK : std::cout<<"ENOTSOCK"<<std::endl; exit(1);		       
-   			default : std::cout<<"Something else "<<y<<std::endl; exit(1);
+   			default : std::cout<<"Something else "<<bytes_recvd<<std::endl; exit(1);
  		}
  		printf("Recv failed\n");
  		return NULL;
  	}
-	write(1, buf, y);
  	std::string s;
 	int i=4;
- 	while(i<y)
+ 	while(i<bytes_recvd)
  		s.push_back(buf[i++]);
  	std::cout<<"Length is "<<s.length()<<std::endl;
  	configmessage::Config myconfig;
  	myconfig.ParseFromString(s);
-	std::cout<<myconfig.name();
+ 	set_config(myconfig);
  	return NULL;
 
  	exit(0);
 }
 
+void LocalConfig::set_config(configmessage::Config myconfig)
+{
+	this->_name = myconfig.name();
+	this->_ipaddr = myconfig.ipaddr();
+	this->_iface = myconfig,iface();
+	this->_port = myconfig.port();
+	this->_ad = myconfig.ad();
+	this->_hid = myconfig.hid();
+}
+
 std::string LocalConfig::get_raddr()
 {
-	return "";
+	return this->_r_addr;
 }
 
 std::string LocalConfig::get_rport()
 {
-	return "";
+	return this->_r_port;
 }
 
 std::string LocalConfig::get_our_addr()
 {
-	return "";
+	return "RE " + this->_r_ad + " " + this->_r_hid;
 }
 
 std::string LocalConfig::get_their_addr()
@@ -264,7 +272,7 @@ std::string LocalConfig::get_server_aid()
 
 std::string LocalConfig::get_router_iface()
 {
-	return "";
+	return this->_iface;
 }
 
 std::string LocalConfig::get_ticket_store()

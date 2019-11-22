@@ -35,11 +35,23 @@ class LocalConfig {
     private:
         LocalConfig(const std::string& confFile);
 		void stripInputLine(std::string& line);
+		void LocalConfig::set_config(configmessage::Config myconfig);
         std::unordered_map<std::string, std::string> _conf;
         int control_socket;
         pthread_t control_thread;
         GraphPtr mydag;
         sockaddr_x *saddr;
+        std::string _name;
+        // my interface with the router
+        std::string _iface;
+        // router's IP address
+        std::string _r_addr;
+        // router's Port
+        std::string _r_port;
+        // router's AD
+        std::string _r_ad;
+        // router's HID
+        std::string _r_hid;
 };
 
 #endif //XIA_LOCAL_CONFIG_H
