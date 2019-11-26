@@ -174,8 +174,8 @@ void *LocalConfig::config_controller()
 	struct sockaddr_storage their_addr;
 	socklen_t addr_size = sizeof(struct sockaddr);
 	int new_fd;
-	char buf[256];
-	bzero(buf, 256);
+	char buf[512];
+	bzero(buf, 512);
 	new_fd = accept(this->control_socket, (struct sockaddr *)&their_addr, 
 		&addr_size);
 	if(new_fd < 0)
@@ -249,6 +249,7 @@ void LocalConfig::set_config(configmessage::Config myconfig)
 	this->_r_port = myconfig.port();
 	this->_r_ad = myconfig.ad();
 	this->_r_hid = myconfig.hid();
+	this->serverdag_str = myconfig.serverdag.
 }
 
 std::string LocalConfig::get_raddr()
