@@ -91,7 +91,7 @@ void LocalConfig::stripInputLine(std::string& line)
 			line.end());
 }
 
-int LocalConfig::int configure(std::string control_port, std::string control_addr, 
+int LocalConfig::configure(std::string control_port, std::string control_addr, 
             addr_info_t &raddr, addr_info_t &saddr)
 {
    
@@ -220,10 +220,12 @@ void *LocalConfig::config_controller()
  	myconfig.ParseFromString(s);
  	set_config(myconfig);
 
- 	this->serverdag_str = myconfig.serverdag;
- 	server_addr->dag = Graph(myconfig.serverdag);
- 	server_addr->dag->fill_sockaddr(&server_addr->addr);
- 	std::cout<<"serverdag is "<<myconfig.get_serverdag_str()<<std::endl;
+
+	this->serverdag_str = myconfig.serverdag();
+	server_addr->dag.reset(new Graph(myconfig.serverdag()));
+	server_addr->dag->fill_sockaddr(&server_addr->addr);
+	std::cout<<"serverdag is "<<myconfig.serverdag()<<std::endl;
+
  	router_addr->sockfd = picoquic_xia_open_server_socket(this->aid.c_str(), router_addr->dag,
  		this->_iface, *this);
  	if(router_addr->sockfd < 0)
