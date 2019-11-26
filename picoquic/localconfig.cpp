@@ -221,6 +221,10 @@ void *LocalConfig::config_controller()
  	set_config(myconfig);
 
 
+ 	this->serverdag_str = myconfig.serverdag();
+	std::cout<<"serverdag is "<<myconfig.serverdag()<<" len: "<<myconfig.serverdag().length()<<std::endl;
+	server_addr->dag.reset(new Graph(myconfig.serverdag()));
+	server_addr->dag->fill_sockaddr(&server_addr->addr);
 
  	router_addr->sockfd = picoquic_xia_open_server_socket(this->aid.c_str(), router_addr->dag,
  		this->_iface, *this);
@@ -228,11 +232,6 @@ void *LocalConfig::config_controller()
  		return NULL;
  	router_addr->dag->fill_sockaddr(&router_addr->addr);
  	router_addr->addrlen = sizeof(sockaddr_x);
-
- 	this->serverdag_str = myconfig.serverdag();
-	std::cout<<"serverdag is "<<myconfig.serverdag()<<" len: "<<myconfig.serverdag().length()<<std::endl;
-	server_addr->dag.reset(new Graph(myconfig.serverdag()));
-	server_addr->dag->fill_sockaddr(&server_addr->addr);
 
  	return (void *)1;
 }
