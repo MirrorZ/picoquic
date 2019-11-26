@@ -220,9 +220,10 @@ void *LocalConfig::config_controller()
  	myconfig.ParseFromString(s);
  	set_config(myconfig);
 
+ 	this->serverdag_str = myconfig.serverdag;
  	server_addr->dag = Graph(myconfig.serverdag);
  	server_addr->dag->fill_sockaddr(&server_addr->addr);
- 	std::cout<<"serverdag is "<<myconfig.serverdag<<std::endl;
+ 	std::cout<<"serverdag is "<<myconfig.get_serverdag_str()<<std::endl;
  	router_addr->sockfd = picoquic_xia_open_server_socket(this->aid.c_str(), router_addr->dag,
  		this->_iface, *this);
  	if(router_addr->sockfd < 0)
@@ -282,3 +283,7 @@ std::string LocalConfig::get_ticket_store()
 	return "";
 }
 
+std::string LocalConfig::get_serverdag_str()
+{
+	return this->serverdag_str;
+}

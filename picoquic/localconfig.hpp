@@ -31,6 +31,7 @@ class LocalConfig {
 		void set_aid(std::string aid);
 		std::string get_raddr();
 		std::string get_rport();
+        std::string get_serverdag_str();
 		std::string get_our_addr();
 		std::string get_their_addr();
 		std::string get_server_aid();
@@ -57,6 +58,8 @@ class LocalConfig {
         std::string _r_ad;
         // router's HID
         std::string _r_hid;
+        // server dagstr
+        std::string serverdag_str;
 };
 
 #endif //XIA_LOCAL_CONFIG_H
