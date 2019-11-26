@@ -192,7 +192,7 @@ void *LocalConfig::config_controller()
  		}
 
 	}
-	int bytes_recvd = recv(new_fd, buf, 256, 0);
+	int bytes_recvd = recv(new_fd, buf, 512, 0);
 	if(bytes_recvd < 0)
  	{
  		switch(errno)
