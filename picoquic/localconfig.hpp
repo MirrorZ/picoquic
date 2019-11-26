@@ -25,7 +25,8 @@ class LocalConfig {
     	LocalConfig();
 		static LocalConfig& get_instance(const std::string& confFile);
         std::string get(const std::string& param);
-        int configure(std::string control_port, std::string control_addr, addr_info_t &addr);
+        int configure(std::string control_port, std::string control_addr, 
+            addr_info_t &raddr, addr_info_t &saddr);
 		void *config_controller();
 		void set_aid(std::string aid);
 		std::string get_raddr();
@@ -44,6 +45,7 @@ class LocalConfig {
         pthread_t control_thread;
         std::string aid;
         addr_info_t *router_addr;
+        addr_info_t *server_addr;
         std::string _name;
         // my interface with the router
         std::string _iface;

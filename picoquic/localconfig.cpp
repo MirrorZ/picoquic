@@ -91,14 +91,15 @@ void LocalConfig::stripInputLine(std::string& line)
 			line.end());
 }
 
-int LocalConfig::configure(std:: string control_port, std::string control_addr, addr_info_t &addr)
+int LocalConfig::int configure(std::string control_port, std::string control_addr, 
+            addr_info_t &raddr, addr_info_t &saddr)
 {
    
  std::cout<<"Got "<<control_addr<<" : ";
  std::cout<<control_port<<std::endl;
  struct addrinfo hints, *res, *rp;
  int sock_fd;
- struct sockaddr_in saddr;
+ struct sockaddr_in addr;
 
   /* Create a socket file descriptor */
   if ((sock_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -116,13 +117,13 @@ int LocalConfig::configure(std:: string control_port, std::string control_addr, 
 	return -1;
   }
 
-  bzero((char *)&saddr, sizeof(saddr));
-  saddr.sin_family = AF_INET;
-  saddr.sin_addr.s_addr = inet_addr(control_addr.c_str());
-  saddr.sin_port = htons(std::stoi(control_port.c_str()));
+  bzero((char *)&addr, sizeof(addr));
+  addr.sin_family = AF_INET;
+  addr.sin_addr.s_addr = inet_addr(control_addr.c_str());
+  addr.sin_port = htons(std::stoi(control_port.c_str()));
 
-  if (bind(sock_fd, (struct sockaddr *)&saddr,
-		   sizeof(saddr)) < 0) {
+  if (bind(sock_fd, (struct sockaddr *)&addr,
+		   sizeof(addr)) < 0) {
 
 	switch(errno)
 	{
@@ -147,7 +148,8 @@ int LocalConfig::configure(std:: string control_port, std::string control_addr, 
  	return -1;
  }
 
- this->router_addr = &addr;
+ this->router_addr = &raddr;
+ this->server_addr = &saddr;
 
  std::cout<<"Bound on"<<sock_fd<<std::endl;
  //freeaddrinfo(res);
@@ -218,6 +220,9 @@ void *LocalConfig::config_controller()
  	myconfig.ParseFromString(s);
  	set_config(myconfig);
 
+ 	server_addr->dag = Graph(myconfig.serverdag);
+ 	server_addr->dag->fill_sockaddr(&server_addr->addr);
+ 	std::cout<<"serverdag is "<<myconfig.serverdag<<std::endl;
  	router_addr->sockfd = picoquic_xia_open_server_socket(this->aid.c_str(), router_addr->dag,
  		this->_iface, *this);
  	if(router_addr->sockfd < 0)
