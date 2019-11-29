@@ -162,6 +162,18 @@ static int _send_server_cmd(std::string cmd, LocalConfig &conf)
         std::cout << "ERROR: creating socket for router config" << std::endl;
         return -1;
     }
+
+    struct sockaddr_in addr;
+    bzero((char *)&addr, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = inet_addr(conf.get_router_iface().c_str());
+    
+    if (bind(rsockfd, (struct sockaddr *)&addr,
+           sizeof(addr)) < 0) {
+        perror("\n");
+        return -1;
+    }
+
     if(connect(rsockfd, (struct sockaddr*)&router_addr,sizeof(router_addr))) {
         std::cout << "ERROR: talking to router for route setup" << std::endl;
         perror("\n");
@@ -235,7 +247,6 @@ auto buildRouteRemoveCommandForXID(std::string& xidtype,
 {
     // auto conf = LocalConfig::get_instance(CONFFILE);
     // auto router_iface = conf.get(ROUTER_IFACE);
-    auto router_iface = conf.get_router_iface();
     std::ostringstream cmd;
     std::string xidstr(xid);
     cmd << "./bin/xroute -r " << xidtype << "," << xidstr;
