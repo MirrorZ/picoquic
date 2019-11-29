@@ -167,13 +167,16 @@ static int _send_server_cmd(std::string cmd, LocalConfig &conf)
     bzero((char *)&addr, sizeof(addr));
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = inet_addr(conf.get_router_iface().c_str());
+    std::cout<<"Set sin addr to"<<conf.get_router_iface()<<std::endl;
     
     if (bind(rsockfd, (struct sockaddr *)&addr,
            sizeof(addr)) < 0) {
         perror("\n");
         return -1;
     }
-
+    char str[64];
+    inet_ntop(AF_INET, &(router_addr.sin_addr), str, INET_ADDRSTRLEN);
+    std::cout<<"Want to connect to "<<str<<std::endl;
     if(connect(rsockfd, (struct sockaddr*)&router_addr,sizeof(router_addr))) {
         std::cout << "ERROR: talking to router for route setup" << std::endl;
         perror("\n");

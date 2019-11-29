@@ -139,16 +139,6 @@ int LocalConfig::configure(std::string control_port, std::string control_addr,
  this->router_addr = &raddr;
  this->server_addr = &saddr;
 
- std::cout<<"Bound on"<<sock_fd<<std::endl;
- //freeaddrinfo(res);
- //std::cout<<"freeaddrinfo"<<std::endl;
-
- // if(pthread_create(&control_thread, NULL, config_controller, NULL) < 0)
- // {
- // 	printf("Failed to create a thread\n");
- // 	return -1;
- // }
- // 
  void *ret = config_controller();
  if(!ret)
    return -1;
