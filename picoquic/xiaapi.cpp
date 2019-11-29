@@ -488,6 +488,7 @@ int picoquic_xia_router_control_addr(struct sockaddr_in* router_addr,
     // 
     auto raddr = conf.get_raddr();
     auto rcport = conf.get_rport();
+    std::cout<<"Connecting to "<<raddr<<":"<<rcport<<std::endl;
     // TODO: future calls should just return address without reading.
     memset(router_addr, 0, sizeof(struct sockaddr_in));
     router_addr->sin_port = htons(std::stoi(rcport));
