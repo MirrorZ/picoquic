@@ -267,7 +267,7 @@ auto buildRouteCommandForXID(std::string& xidtype,
     // auto router_iface = conf.get(ROUTER_IFACE);
 
     // Set route for AID to be sent to our bound address
-    auto router_iface = conf.get_router_iface();
+    auto router_iface = 0;//conf.get_router_iface();
     std::ostringstream cmd;
     std::string xidstr(xid);
     cmd << "./bin/xroute -a " << xidtype << "," << xidstr << ","
