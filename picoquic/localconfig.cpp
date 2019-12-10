@@ -7,6 +7,7 @@
 #include <sstream>
 #include <vector>
 #include <string.h>
+#include <pthread.h>
 
 // C Headers
 #include <sys/socket.h>
@@ -21,6 +22,9 @@
 // XIA support
 #include "xiaapi.hpp"
 #include "dagaddr.hpp"
+
+#define BUFSIZE 512
+
 static std::string& ltrim(std::string& str, const std::string& chars= " \t\r")
 {
     str.erase(0, str.find_first_not_of(chars));
@@ -128,102 +132,113 @@ int LocalConfig::configure(std::string control_port, std::string control_addr,
 	return -1;
   }
 
- this->control_socket = sock_fd;
-
  if(listen(sock_fd, 1) < 0)
  {
  	printf("Failed while listening");
  	return -1;
  }
 
+ // started listening on control socket
+ this->control_socket = sock_fd;
  this->router_addr = &raddr;
  this->server_addr = &saddr;
+ this->router_addr->addrlen = sizeof(sockaddr_x);
+ this->loop = 0;
 
- void *ret = config_controller();
- if(!ret)
+
+// Get the first configuration filled in conf
+ void *ret = LocalConfig::config_controller((void *)this);
+ if(ret)
    return -1;
+
+ //this->controller_thread = 
+ //std::thread controller_thr(&LocalConfig::config_controller, this, *this, 1);
+ //std::thread controller_thr(&LocalConfig::test, 1);
+ this->loop = 1;
+ typedef void * (*THREADFUNCPTR)(void *);
+ pthread_create(&this->control_thread, NULL, (THREADFUNCPTR)&LocalConfig::config_controller, (void *)this);
 
  return 0;
 }
 
-void *LocalConfig::config_controller()
+
+void *LocalConfig::config_controller(void *arg)
 {
+	LocalConfig *conf = (LocalConfig *)arg;
 	std::cout<<"In config controller"<<std::endl;
+	
 	struct sockaddr_storage their_addr;
 	socklen_t addr_size = sizeof(struct sockaddr);
 	int new_fd;
-	char buf[512];
-	bzero(buf, 512);
-	new_fd = accept(this->control_socket, (struct sockaddr *)&their_addr, 
+	char buf[BUFSIZE];
+	bzero(buf, BUFSIZE);
+	
+	do {
+		
+		// accept incoming configuration update requests
+		new_fd = accept(conf->get_control_socket(), (struct sockaddr *)&their_addr, 
 		&addr_size);
-	if(new_fd < 0)
-	{
-	   		switch(errno)
- 		{
- 			case EAGAIN : std::cout<<"EAGAIN"<<std::endl; exit(1);
- 			case EBADF : std::cout<<"EBADF"<<std::endl; exit(1);
- 			case ECONNREFUSED : std::cout<<"ECONNREFUSED"<<std::endl; exit(1);
-  			case EFAULT : std::cout<<"EFAULT"<<std::endl; exit(1);
-  			case EINTR : std::cout<<"EINTR"<<std::endl; exit(1);
-   			case EINVAL : std::cout<<"EINVAL"<<std::endl; exit(1);
-   			default : std::cout<<"new fd Something else"<<std::endl; exit(1);
- 		}
-
-	}
-	int bytes_recvd = recv(new_fd, buf, 512, 0);
-	if(bytes_recvd < 0)
- 	{
- 		switch(errno)
- 		{
- 			case EAGAIN : std::cout<<"EAGAIN"<<std::endl; exit(1);
- 			case EBADF : std::cout<<"EBADF"<<std::endl; exit(1);
- 			case ECONNREFUSED : std::cout<<"ECONNREFUSED"<<std::endl; exit(1);
-  			case EFAULT : std::cout<<"EFAULT"<<std::endl; exit(1);
-  			case EINTR : std::cout<<"EINTR"<<std::endl; exit(1);
-   			case EINVAL : std::cout<<"EINVAL"<<std::endl; exit(1);
-   			case ENOMEM : std::cout<<"ENOMEM"<<std::endl; exit(1);
-     		        case ENOTCONN : std::cout<<"ENOTCONN"<<std::endl; exit(1);
-   			case ENOTSOCK : std::cout<<"ENOTSOCK"<<std::endl; exit(1);		       
-   			default : std::cout<<"Something else "<<bytes_recvd<<std::endl; exit(1);
- 		}
- 		printf("Recv failed\n");
- 		return NULL;
- 	}
- 	std::string s;
-	int i=4;
- 	while(i<bytes_recvd)
- 		s.push_back(buf[i++]);
- 	std::cout<<"Length is "<<s.length()<<std::endl;
- 	configmessage::Config myconfig;
- 	myconfig.ParseFromString(s);
- 	set_config(myconfig);
-
-
- 	this->serverdag_str = myconfig.serverdag();
-	std::cout<<"serverdag is "<<myconfig.serverdag()<<" len: "<<myconfig.serverdag().length()<<std::endl;
-	server_addr->dag.reset(new Graph(myconfig.serverdag()));
-	server_addr->dag->fill_sockaddr(&server_addr->addr);
-
- 	router_addr->sockfd = picoquic_xia_open_server_socket(this->aid.c_str(), router_addr->dag,
- 		this->_iface, *this);
- 	if(router_addr->sockfd < 0)
- 		return NULL;
- 	router_addr->dag->fill_sockaddr(&router_addr->addr);
- 	router_addr->addrlen = sizeof(sockaddr_x);
-
- 	return (void *)1;
+		if(new_fd < 0)
+		{
+			perror("\n");
+			return (void *)-1;
+		}
+		int bytes_recvd = recv(new_fd, buf, BUFSIZE, 0);
+		if(bytes_recvd < 0)
+	 	{
+	 		perror("\n");
+	 		return (void *)-1;
+	 	}
+	 	// change this
+	 	std::string s;
+		int i=4;
+	 	while(i<bytes_recvd)
+	 		s.push_back(buf[i++]);
+	 	std::cout<<"Length is "<<s.length()<<std::endl;
+	 	configmessage::Config myconfig;
+	 	myconfig.ParseFromString(s);
+	 	// // //
+	 	LocalConfig::update_serveraddr(*conf, myconfig.serverdag());
+		LocalConfig::update_routeraddr(*conf, myconfig);
+	 	
+	}while(conf->loop);
+	return NULL;
 }
 
-void LocalConfig::set_config(configmessage::Config myconfig)
+void LocalConfig::update_serveraddr(LocalConfig &conf, std::string serverdag)
 {
-	this->_name = myconfig.name();
-	this->aid = myconfig.aid();
-	this->_r_addr = myconfig.ipaddr();
-	this->_iface = myconfig.iface();
-	this->_r_port = myconfig.port();
-	this->_r_ad = myconfig.ad();
-	this->_r_hid = myconfig.hid();
-	this->serverdag_str = myconfig.serverdag();
+	conf.set_serverdag_str(serverdag);
+	std::cout<<"serverdag is "<<serverdag<<" len: "<<serverdag.length()<<std::endl;
+	conf.server_addr->dag.reset(new Graph(serverdag));
+	conf.server_addr->dag->fill_sockaddr(&conf.server_addr->addr);
+}
+
+void LocalConfig::update_routeraddr(LocalConfig &conf, configmessage::Config myconfig)
+{
+ 	std::string router_addr = "RE " + myconfig.ad() + " " + myconfig.hid();
+ 	if(conf.get_our_addr().compare(router_addr) != 0 || conf.get_raddr().compare(myconfig.ipaddr()) != 0
+ 		|| conf.get_rport().compare(myconfig.port()) != 0)
+ 	{
+		int sockfd = picoquic_xia_open_server_socket(conf.get_aid().c_str(), conf.router_addr->dag,
+		myconfig.iface(), conf);
+	 	if(sockfd < 0)
+	 		return;
+	 	conf.router_addr->sockfd = sockfd;
+	 	conf.router_addr->dag->fill_sockaddr(&conf.router_addr->addr);
+	 	LocalConfig::set_config(conf, myconfig);
+ 	}
+}
+
+
+void LocalConfig::set_config(LocalConfig &conf, configmessage::Config myconfig)
+{
+	conf._name = myconfig.name();
+	conf.aid = myconfig.aid();
+	conf._r_addr = myconfig.ipaddr();
+	conf._iface = myconfig.iface();
+	conf._r_port = myconfig.port();
+	conf._r_ad = myconfig.ad();
+	conf._r_hid = myconfig.hid();
 }
 
 std::string LocalConfig::get_raddr()
@@ -264,4 +279,20 @@ std::string LocalConfig::get_ticket_store()
 std::string LocalConfig::get_serverdag_str()
 {
 	return this->serverdag_str;
+}
+
+int LocalConfig::get_control_socket()
+{
+	return this->control_socket;
+}
+
+void LocalConfig::set_serverdag_str(std::string serverdag_str)
+{
+	if(this->serverdag_str.compare(serverdag_str) != 0)
+		this->serverdag_str = serverdag_str;
+}
+
+std::string LocalConfig::get_aid()
+{
+	return this->aid;
 }
