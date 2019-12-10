@@ -74,7 +74,17 @@ LocalConfig::LocalConfig(const std::string& confFile)
 	configuration.close();
 }
 
-LocalConfig::LocalConfig(){;}
+LocalConfig::LocalConfig(){
+	this->control_socket = -1;
+    this->aid = "";
+    this->_name = "";
+    this->_iface = "";
+    this->_r_addr = "";
+	this->_r_port = "";
+	this->_r_ad = "";
+	this->_r_hid = "";
+	this->serverdag_str = "";
+}
 
 std::string LocalConfig::get(const std::string& param)
 {
