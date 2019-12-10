@@ -229,8 +229,8 @@ void LocalConfig::update_routeraddr(LocalConfig &conf, configmessage::Config myc
  	if(conf.get_our_addr().compare(router_addr) != 0 || conf.get_raddr().compare(myconfig.ipaddr()) != 0
  		|| conf.get_rport().compare(myconfig.port()) != 0)
  	{
- 		std::string old_ad = conf->_r_ad;
- 		std::string old_hid = conf->_r_hid;
+ 		std::string old_ad = conf._r_ad;
+ 		std::string old_hid = conf._r_hid;
 
  		conf._r_ad = myconfig.ad();
  		conf._r_hid = myconfig.hid();
