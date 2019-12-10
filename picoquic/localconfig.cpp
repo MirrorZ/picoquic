@@ -175,7 +175,7 @@ int LocalConfig::configure(std::string control_port, std::string control_addr,
 void *LocalConfig::config_controller(void *arg)
 {
 	LocalConfig *conf = (LocalConfig *)arg;
-	std::cout<<"In config controller with "<<conf->name<<std::endl;
+	std::cout<<"In config controller with "<<conf->_name<<std::endl;
 	
 	struct sockaddr_storage their_addr;
 	socklen_t addr_size = sizeof(struct sockaddr);
@@ -211,7 +211,7 @@ void *LocalConfig::config_controller(void *arg)
 	 	LocalConfig::update_serveraddr(*conf, myconfig.serverdag());
 		LocalConfig::update_routeraddr(*conf, myconfig);
 	 	
-	} xwhile(conf->loop);
+	} while(conf->loop);
 	return NULL;
 }
 
