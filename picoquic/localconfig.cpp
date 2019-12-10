@@ -232,9 +232,9 @@ void LocalConfig::update_routeraddr(LocalConfig &conf, configmessage::Config myc
  		std::string old_ad = conf->_r_ad;
  		std::string old_hid = conf->_r_hid;
 
- 		conf->_r_ad = myconfig.ad();
- 		conf->_r_hid = myconfig.hid();
- 		
+ 		conf._r_ad = myconfig.ad();
+ 		conf._r_hid = myconfig.hid();
+
 		int sockfd = picoquic_xia_open_server_socket(conf.get_aid().c_str(), conf.router_addr->dag,
 		myconfig.iface(), conf);
 	 	if(sockfd < 0)
