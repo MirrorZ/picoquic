@@ -229,10 +229,21 @@ void LocalConfig::update_routeraddr(LocalConfig &conf, configmessage::Config myc
  	if(conf.get_our_addr().compare(router_addr) != 0 || conf.get_raddr().compare(myconfig.ipaddr()) != 0
  		|| conf.get_rport().compare(myconfig.port()) != 0)
  	{
+ 		std::string old_ad = conf->_r_ad;
+ 		std::string old_hid = conf->_r_hid;
+
+ 		conf->_r_ad = myconfig.ad();
+ 		conf->_r_hid = myconfig.hid();
+ 		
 		int sockfd = picoquic_xia_open_server_socket(conf.get_aid().c_str(), conf.router_addr->dag,
 		myconfig.iface(), conf);
 	 	if(sockfd < 0)
+	 	{
+	 		// restore
+			conf._r_ad = old_ad;
+			conf._r_hid = old_hid;
 	 		return;
+	 	}
 	 	conf.router_addr->sockfd = sockfd;
 	 	conf.router_addr->dag->fill_sockaddr(&conf.router_addr->addr);
 	 	LocalConfig::set_config(conf, myconfig);
@@ -247,8 +258,8 @@ void LocalConfig::set_config(LocalConfig &conf, configmessage::Config myconfig)
 	conf._r_addr = myconfig.ipaddr();
 	conf._iface = myconfig.iface();
 	conf._r_port = myconfig.port();
-	conf._r_ad = myconfig.ad();
-	conf._r_hid = myconfig.hid();
+	// conf._r_ad = myconfig.ad();
+	// conf._r_hid = myconfig.hid();
 }
 
 std::string LocalConfig::get_raddr()
