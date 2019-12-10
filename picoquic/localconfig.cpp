@@ -250,8 +250,8 @@ void LocalConfig::set_config(LocalConfig &conf, configmessage::Config myconfig)
 	conf._r_addr = myconfig.ipaddr();
 	conf._iface = myconfig.iface();
 	conf._r_port = myconfig.port();
-	// conf._r_ad = myconfig.ad();
-	// conf._r_hid = myconfig.hid();
+	conf._r_ad = myconfig.ad();
+	conf._r_hid = myconfig.hid();
 }
 
 std::string LocalConfig::get_raddr()
