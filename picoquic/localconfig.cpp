@@ -161,12 +161,9 @@ int LocalConfig::configure(std::string control_port, std::string control_addr,
  if(ret)
    return -1;
 
- //this->controller_thread = 
- //std::thread controller_thr(&LocalConfig::config_controller, this, *this, 1);
- //std::thread controller_thr(&LocalConfig::test, 1);
  this->loop = 1;
- typedef void * (*THREADFUNCPTR)(void *);
- pthread_create(&this->control_thread, NULL, (THREADFUNCPTR)&LocalConfig::config_controller, (void *)this);
+ pthread_create(&this->control_thread, NULL, config_controller,
+ 		(void *)this);
 
  return 0;
 }
@@ -174,8 +171,9 @@ int LocalConfig::configure(std::string control_port, std::string control_addr,
 
 void *LocalConfig::config_controller(void *arg)
 {
+
 	LocalConfig *conf = (LocalConfig *)arg;
-	std::cout<<"In config controller with "<<conf->_name<<std::endl;
+	        printf("In config controller %s\n", conf->_name);
 	
 	struct sockaddr_storage their_addr;
 	socklen_t addr_size = sizeof(struct sockaddr);
