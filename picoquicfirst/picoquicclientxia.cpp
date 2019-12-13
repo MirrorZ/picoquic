@@ -25,10 +25,6 @@ extern "C" {
 #define CONTROL_PORT "8295"
 #define CONTROL_IP "10.0.1.130"
 
-std::string MY_AID = "AID:69a4e068880cd40549405dfda6e794b0c7fdf195";
-std::string SERVER_AID = "AID:69a4e068880cd40549405dfda6e794b0c7fdf192";
-std::string SERVER_ADDR = "RE AD:04f61c792990ec39f0af16c6a7c35b6807a61a63 HID:691b1cb51735f5dbbe42282b68e34f96cbfa39b2";
-
 // If there were multiple streams, we would track progress for them here
 struct callback_context_t {
 	int connected;
@@ -307,7 +303,7 @@ int main()
 			printf("ERROR: sending packet to server\n");
 			goto client_done;
 		}
-		printf("Sent %d byte packet to server\n", bytes_sent);
+		printf("Sent %d byte packet to server: %s) from me: %s\n", bytes_sent, serveraddr.dag.dag_string(), myaddr.dag.dag_string());
 	}
 
 	// Wait for incoming packets
@@ -377,8 +373,8 @@ int main()
 			// Waited too long. Close connection
 			if(current_time > callback_context.last_interaction_time
 					&& current_time - callback_context.last_interaction_time
-					    > 10000000ull) {
-				printf("No progress for 10 seconds. Closing\n");
+					    > 60000000ull) {
+				printf("No progress for 60 seconds. Closing\n");
 				picoquic_close(connection, 0);
 				connection = NULL;
 				break;
@@ -405,6 +401,7 @@ int main()
 			if(bytes_sent <= 0) {
 				printf("ERROR sending packet to server\n");
 			}
+			printf("Sent %d byte packet to server: %s) from me: %s\n", bytes_sent, serveraddr.dag.dag_string(), myaddr.dag.dag_string());
 		}
 		}
 

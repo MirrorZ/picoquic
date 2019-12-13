@@ -37,10 +37,7 @@ class LocalConfig {
 		std::string get_rport();
         std::string get_serverdag_str();
 		std::string get_our_addr();
-		std::string get_their_addr();
-		std::string get_server_aid();
 		std::string get_router_iface();
-		std::string get_ticket_store();
         std::string get_aid();
         std::string control_addr;
         std::string control_port;

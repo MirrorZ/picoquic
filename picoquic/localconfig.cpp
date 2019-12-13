@@ -1,4 +1,3 @@
-
 #include "localconfig.hpp"
 
 #include <algorithm>
@@ -108,19 +107,15 @@ void LocalConfig::stripInputLine(std::string& line)
 int LocalConfig::configure(std::string control_port, std::string control_addr, 
             addr_info_t &raddr, addr_info_t &saddr)
 {
-   
- std::cout<<"Got "<<control_addr<<" : ";
- std::cout<<control_port<<std::endl;
  struct addrinfo hints, *res, *rp;
  int sock_fd;
  struct sockaddr_in addr;
 
-  /* Create a socket file descriptor */
+  /* Start listening on the contro addr:port */
   if ((sock_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 	printf("Failed to open listen socket\n");
 	return -1;
   }
-
   int opt_value = 1;
 
   /* Eliminates "Address already in use" error from bind. */
@@ -155,13 +150,12 @@ int LocalConfig::configure(std::string control_port, std::string control_addr,
  this->router_addr->addrlen = sizeof(sockaddr_x);
  this->loop = 0;
 
-
 // Get the first configuration filled in conf
  void *ret = LocalConfig::config_controller((void *)this);
  if(ret)
    return -1;
 
- this->loop = 1;
+ this->loop = 1; // keep the config_controller running forever
  pthread_create(&this->control_thread, NULL, config_controller,
  		(void *)this);
 
@@ -171,9 +165,6 @@ int LocalConfig::configure(std::string control_port, std::string control_addr,
 
 void *LocalConfig::config_controller(void *arg)
 {
-
-	LocalConfig *conf = (LocalConfig *)arg;
-	        printf("In config controller %s\n", conf->_name);
 	
 	struct sockaddr_storage their_addr;
 	socklen_t addr_size = sizeof(struct sockaddr);
@@ -202,10 +193,12 @@ void *LocalConfig::config_controller(void *arg)
 		int i=4;
 	 	while(i<bytes_recvd)
 	 		s.push_back(buf[i++]);
-	 	std::cout<<"Length is "<<s.length()<<std::endl;
+
 	 	configmessage::Config myconfig;
 	 	myconfig.ParseFromString(s);
-	 	// // //
+
+	 	printf("Received new config from the configurator\n");
+
 	 	LocalConfig::update_serveraddr(*conf, myconfig.serverdag());
 		LocalConfig::update_routeraddr(*conf, myconfig);
 	 	
@@ -213,12 +206,24 @@ void *LocalConfig::config_controller(void *arg)
 	return NULL;
 }
 
+bool LocalConfig::set_serverdag_str(std::string serverdag_str)
+{
+	if(this->serverdag_str.compare(serverdag_str) != 0)
+	{
+		this->serverdag_str = serverdag_str;
+		return true;
+	}
+	return false;
+}
+
 void LocalConfig::update_serveraddr(LocalConfig &conf, std::string serverdag)
 {
-	conf.set_serverdag_str(serverdag);
-	std::cout<<"serverdag is "<<serverdag<<" len: "<<serverdag.length()<<std::endl;
-	conf.server_addr->dag.reset(new Graph(serverdag));
-	conf.server_addr->dag->fill_sockaddr(&conf.server_addr->addr);
+	if(conf.set_serverdag_str(serverdag))
+	{
+		conf.server_addr->dag.reset(new Graph(serverdag));
+		conf.server_addr->dag->fill_sockaddr(&conf.server_addr->addr);
+		printf("updated server dag to %s ", serverdag.c_str());
+	}
 }
 
 void LocalConfig::update_routeraddr(LocalConfig &conf, configmessage::Config myconfig)
@@ -233,10 +238,12 @@ void LocalConfig::update_routeraddr(LocalConfig &conf, configmessage::Config myc
 		myconfig.iface(), conf);
 	 	if(sockfd < 0)
 	 	{
-	 		return;
+	 		printf("Could not update to the new config");
+	 		exit(1);
 	 	}
 	 	conf.router_addr->sockfd = sockfd;
 	 	conf.router_addr->dag->fill_sockaddr(&conf.router_addr->addr);
+	 	printf("Router addr updated to %s: %s \n", conf._r_addr.c_str(), conf._r_port.c_str());
  	}
 }
 
@@ -267,24 +274,9 @@ std::string LocalConfig::get_our_addr()
 	return "RE " + this->_r_ad + " " + this->_r_hid;
 }
 
-std::string LocalConfig::get_their_addr()
-{
-	return "";
-}
-
-std::string LocalConfig::get_server_aid()
-{
-	return "";
-}
-
 std::string LocalConfig::get_router_iface()
 {
 	return this->_iface;
-}
-
-std::string LocalConfig::get_ticket_store()
-{
-	return "";
 }
 
 std::string LocalConfig::get_serverdag_str()
@@ -295,12 +287,6 @@ std::string LocalConfig::get_serverdag_str()
 int LocalConfig::get_control_socket()
 {
 	return this->control_socket;
-}
-
-void LocalConfig::set_serverdag_str(std::string serverdag_str)
-{
-	if(this->serverdag_str.compare(serverdag_str) != 0)
-		this->serverdag_str = serverdag_str;
 }
 
 std::string LocalConfig::get_aid()
