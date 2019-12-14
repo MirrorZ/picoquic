@@ -201,7 +201,7 @@ int main()
 	// if(sockfd == INVALID_SOCKET) {
 	// 	goto client_done;
 	// }
-	// std::cout << "CLIENTADDR: " << mydag->dag_string() << std::endl;
+	// std::cout << "CLIENTADDR: " << mydag->dag_string().c_str() << std::endl;
 	// mydag->fill_sockaddr(&my_address);
 	// my_addrlen = sizeof(sockaddr_x);
 	// printf("Created socket to talk to server\n");
@@ -303,7 +303,8 @@ int main()
 			printf("ERROR: sending packet to server\n");
 			goto client_done;
 		}
-		printf("Sent %d byte packet to server: %s) from me: %s\n", bytes_sent, serveraddr.dag->dag_string(), myaddr.dag->dag_string());
+		printf("Sent %d byte packet to server: %s) from me: %s\n", bytes_sent,
+		 serveraddr.dag->dag_string().c_str(), myaddr.dag->dag_string().c_str());
 	}
 
 	// Wait for incoming packets
@@ -401,7 +402,8 @@ int main()
 			if(bytes_sent <= 0) {
 				printf("ERROR sending packet to server\n");
 			}
-			printf("Sent %d byte packet to server: %s) from me: %s\n", bytes_sent, serveraddr.dag->dag_string(), myaddr.dag->dag_string());
+			printf("Sent %d byte packet to server: %s) from me: %s\n", bytes_sent, 
+				serveraddr.dag->dag_string().c_str(), myaddr.dag->dag_string().c_str());
 		}
 		}
 
