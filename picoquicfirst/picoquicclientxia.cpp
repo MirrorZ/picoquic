@@ -303,7 +303,7 @@ int main()
 			printf("ERROR: sending packet to server\n");
 			goto client_done;
 		}
-		printf("Sent %d byte packet to server: %s) from me: %s\n", bytes_sent, serveraddr.dag.dag_string(), myaddr.dag.dag_string());
+		printf("Sent %d byte packet to server: %s) from me: %s\n", bytes_sent, serveraddr.dag->dag_string(), myaddr.dag->dag_string());
 	}
 
 	// Wait for incoming packets
@@ -401,7 +401,7 @@ int main()
 			if(bytes_sent <= 0) {
 				printf("ERROR sending packet to server\n");
 			}
-			printf("Sent %d byte packet to server: %s) from me: %s\n", bytes_sent, serveraddr.dag.dag_string(), myaddr.dag.dag_string());
+			printf("Sent %d byte packet to server: %s) from me: %s\n", bytes_sent, serveraddr.dag->dag_string(), myaddr.dag->dag_string());
 		}
 		}
 

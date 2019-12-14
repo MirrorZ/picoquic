@@ -167,6 +167,7 @@ void *LocalConfig::config_controller(void *arg)
 {
 	
 	struct sockaddr_storage their_addr;
+	LocalConfig *conf = (LocalConfig *)arg;
 	socklen_t addr_size = sizeof(struct sockaddr);
 	int new_fd;
 	char buf[BUFSIZE];

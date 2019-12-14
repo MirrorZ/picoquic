@@ -29,7 +29,7 @@ class LocalConfig {
             addr_info_t &raddr, addr_info_t &saddr);
         static void *config_controller(void *arg);
         int get_control_socket();
-        void set_serverdag_str(std::string serverdag_str);
+        bool set_serverdag_str(std::string serverdag_str);
         static void set_config(LocalConfig &conf, configmessage::Config myconfig); 
         static void update_serveraddr(LocalConfig &conf, std::string serverdag);     
         static void update_routeraddr(LocalConfig &conf, configmessage::Config myconfig);  
