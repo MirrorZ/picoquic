@@ -386,7 +386,7 @@ int main()
 		// We get here whether there was a packet or a timeout
 		send_length = PICOQUIC_MAX_PACKET_SIZE;
 		while(send_length > 0) {
-		
+		sleep(10); // add a delay make sure the configuration updates
 		// Send out all packets waiting to go
 		if(picoquic_prepare_packet(connection, current_time,
 					send_buffer, sizeof(send_buffer), &send_length,
