@@ -202,6 +202,7 @@ void *LocalConfig::config_controller(void *arg)
 
 	 	LocalConfig::update_serveraddr(*conf, myconfig.serverdag());
 		LocalConfig::update_routeraddr(*conf, myconfig);
+		close(new_fd);
 	 	
 	} while(conf->loop);
 	return NULL;
@@ -214,6 +215,7 @@ bool LocalConfig::set_serverdag_str(std::string serverdag_str)
 		this->serverdag_str = serverdag_str;
 		return true;
 	}
+	printf("serverdag did not change \n");
 	return false;
 }
 
@@ -245,6 +247,10 @@ void LocalConfig::update_routeraddr(LocalConfig &conf, configmessage::Config myc
 	 	conf.router_addr->sockfd = sockfd;
 	 	conf.router_addr->dag->fill_sockaddr(&conf.router_addr->addr);
 	 	printf("Router addr updated to %s: %s \n", conf._r_addr.c_str(), conf._r_port.c_str());
+ 	}
+ 	else
+ 	{
+ 		printf("Router addr did not change\n");
  	}
 }
 
@@ -280,7 +286,7 @@ std::string LocalConfig::get_router_iface()
 	return this->_iface;
 }
 
-std::string LocalConfig::get_serverdag_str()
+std::string LocalConfig::get_server)
 {
 	return this->serverdag_str;
 }
