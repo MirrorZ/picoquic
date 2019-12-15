@@ -390,6 +390,7 @@ int main()
 			sleep(5); // add a delay make sure the configuration updates
 			// Send out all packets waiting to go
 			pthread_mutex_lock(&conf.lock);
+			printf("Locking \n");
 			if(picoquic_prepare_packet(connection, current_time,
 						send_buffer, sizeof(send_buffer), &send_length,
 						NULL, NULL, NULL, NULL)) {
@@ -408,6 +409,7 @@ int main()
 				printf("Sent %d byte packet to server: %s) from me: %s\n", bytes_sent, 
 					serveraddr.dag->dag_string().c_str(), myaddr.dag->dag_string().c_str());
 			}
+			printf("Unlocking \n");
 			pthread_mutex_unlock(&conf.lock);
 		}
 
