@@ -250,7 +250,7 @@ void LocalConfig::update_routeraddr(LocalConfig &conf, configmessage::Config myc
  	}
  	else
  	{
- 		printf("Router addr did not change\n");
+ 		printf("Router addr did not change\n")
  	}
 }
 
@@ -286,7 +286,7 @@ std::string LocalConfig::get_router_iface()
 	return this->_iface;
 }
 
-std::string LocalConfig::get_server)
+std::string LocalConfig::get_serverdag_str()
 {
 	return this->serverdag_str;
 }
