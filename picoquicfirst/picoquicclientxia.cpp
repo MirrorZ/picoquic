@@ -286,12 +286,14 @@ int main()
 	}
 	printf("Zero RTT available: %d\n", zero_rtt_available);
 
+	pthread_mutex_lock(&conf.lock);
 	// Send a packet to get the connection establishment started
 	if(picoquic_prepare_packet(connection, current_time,
 				send_buffer, sizeof(send_buffer), &send_length,
 				(struct sockaddr_storage*)&serveraddr.addr, &serveraddr.addrlen,
 				(struct sockaddr_storage*)&myaddr.addr, &myaddr.addrlen)) {
 		printf("ERROR: preparing a QUIC packet to send\n");
+		pthread_mutex_unlock(&conf.lock);
 		goto client_done;
 	}
 	printf("Prepared packet of size %zu\n", send_length);
@@ -307,6 +309,7 @@ int main()
 		printf("Sent %d byte packet to server: %s) from me: %s\n", bytes_sent,
 		 serveraddr.dag->dag_string().c_str(), myaddr.dag->dag_string().c_str());
 	}
+	pthread_mutex_unlock(&conf.lock);
 
 	// Wait for incoming packets
 	while(picoquic_get_cnx_state(connection) != picoquic_state_disconnected) {
