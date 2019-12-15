@@ -159,13 +159,14 @@ int LocalConfig::configure(std::string control_port, std::string control_addr,
  pthread_create(&this->control_thread, NULL, config_controller,
  		(void *)this);
 
+ while(1);
+
  return 0;
 }
 
 
 void *LocalConfig::config_controller(void *arg)
-{
-	
+{	
 	struct sockaddr_storage their_addr;
 	LocalConfig *conf = (LocalConfig *)arg;
 	socklen_t addr_size = sizeof(struct sockaddr);
@@ -232,6 +233,8 @@ void LocalConfig::update_serveraddr(LocalConfig &conf, std::string serverdag)
 void LocalConfig::update_routeraddr(LocalConfig &conf, configmessage::Config myconfig)
 {
  	std::string router_addr = "RE " + myconfig.ad() + " " + myconfig.hid();
+ 	std::cout<<"Received router_addr : "<<router_addr<<std::endl;
+ 	std::cout<<"Our addr : "<<conf.get_our_addr()<<std::endl;
  	if(conf.get_our_addr().compare(router_addr) != 0 || conf.get_raddr().compare(myconfig.ipaddr()) != 0
  		|| conf.get_rport().compare(myconfig.port()) != 0)
  	{
