@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include <thread>
+#include <pthread.h>
 
 // XIA support
 #include "xiaapi.hpp"
@@ -43,6 +44,7 @@ class LocalConfig {
         std::string control_port;
         addr_info_t *router_addr;
         addr_info_t *server_addr;
+        pthread_mutex_t lock;
     private:
         LocalConfig(const std::string& confFile);
 		void stripInputLine(std::string& line);

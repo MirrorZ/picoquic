@@ -111,6 +111,12 @@ int LocalConfig::configure(std::string control_port, std::string control_addr,
  int sock_fd;
  struct sockaddr_in addr;
 
+ if(pthread_mutex_init(&this->lock, NULL) != 0)
+ {
+ 	printf("Failed to initialize mutex\n");
+ 	return -1;
+ }
+
   /* Start listening on the contro addr:port */
   if ((sock_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 	printf("Failed to open listen socket\n");
@@ -201,8 +207,10 @@ void *LocalConfig::config_controller(void *arg)
 
 	 	printf("Received new config from the configurator\n");
 
+	 	pthread_mutex_lock(&conf->lock);
 	 	LocalConfig::update_serveraddr(*conf, myconfig.serverdag());
 		LocalConfig::update_routeraddr(*conf, myconfig);
+		pthread_mutex_unlock(&conf->lock);
 		close(new_fd);
 	 	
 	} while(conf->loop);
@@ -222,8 +230,7 @@ bool LocalConfig::set_serverdag_str(std::string serverdag_str)
 
 void LocalConfig::update_serveraddr(LocalConfig &conf, std::string serverdag)
 {
-	if(conf.set_serverdag_str(serverdag))
-	{
+	if(conf.set_serverdag_str(serverdag)) {
 		conf.server_addr->dag.reset(new Graph(serverdag));
 		conf.server_addr->dag->fill_sockaddr(&conf.server_addr->addr);
 		printf("updated server dag to %s ", serverdag.c_str());

@@ -9,6 +9,7 @@
 // C includes
 #include <string.h> // memset
 #include <stdio.h>
+#include <pthread.h>
 
 extern "C" {
 #include "picoquic.h" // picoquic_create, states, err, pkt types, contexts
@@ -386,25 +387,28 @@ int main()
 		// We get here whether there was a packet or a timeout
 		send_length = PICOQUIC_MAX_PACKET_SIZE;
 		while(send_length > 0) {
-		sleep(10); // add a delay make sure the configuration updates
-		// Send out all packets waiting to go
-		if(picoquic_prepare_packet(connection, current_time,
-					send_buffer, sizeof(send_buffer), &send_length,
-					NULL, NULL, NULL, NULL)) {
-			printf("ERROR sending QUIC packet\n");
-			goto client_done;
-		}
-		if(send_length > 0) {
-			printf("Sending packet of size %ld\n", send_length);
-			bytes_sent = picoquic_xia_sendmsg(myaddr.sockfd, send_buffer,
-					(int) send_length, &serveraddr.addr, &myaddr.addr, conf);
-			//printf("Sending a packet of size %d\n", (int)send_length);
-			if(bytes_sent <= 0) {
-				printf("ERROR sending packet to server\n");
+			sleep(5); // add a delay make sure the configuration updates
+			// Send out all packets waiting to go
+			pthread_mutex_lock(&conf.lock);
+			if(picoquic_prepare_packet(connection, current_time,
+						send_buffer, sizeof(send_buffer), &send_length,
+						NULL, NULL, NULL, NULL)) {
+				printf("ERROR sending QUIC packet\n");
+				pthread_mutex_unlock(&conf.lock);
+				goto client_done;
 			}
-			printf("Sent %d byte packet to server: %s) from me: %s\n", bytes_sent, 
-				serveraddr.dag->dag_string().c_str(), myaddr.dag->dag_string().c_str());
-		}
+			if(send_length > 0) {
+				printf("Sending packet of size %ld\n", send_length);
+				bytes_sent = picoquic_xia_sendmsg(myaddr.sockfd, send_buffer,
+						(int) send_length, &serveraddr.addr, &myaddr.addr, conf);
+				//printf("Sending a packet of size %d\n", (int)send_length);
+				if(bytes_sent <= 0) {
+					printf("ERROR sending packet to server\n");
+				}
+				printf("Sent %d byte packet to server: %s) from me: %s\n", bytes_sent, 
+					serveraddr.dag->dag_string().c_str(), myaddr.dag->dag_string().c_str());
+			}
+			pthread_mutex_unlock(&conf.lock);
 		}
 
 		// How long before we timeout waiting for more packets
