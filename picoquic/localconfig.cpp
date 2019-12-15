@@ -165,8 +165,6 @@ int LocalConfig::configure(std::string control_port, std::string control_addr,
  pthread_create(&this->control_thread, NULL, config_controller,
  		(void *)this);
 
- while(1);
-
  return 0;
 }
 
