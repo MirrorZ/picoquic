@@ -297,7 +297,7 @@ int main()
 		goto client_done;
 	}
 	printf("Prepared packet of size %zu\n", send_length);
-	myaddr.dag->fill_sockaddr(&myaddr.addr);
+	//myaddr.dag->fill_sockaddr(&myaddr.addr);
 	int bytes_sent;
 	if(send_length > 0) {
 		bytes_sent = picoquic_xia_sendmsg(myaddr.sockfd, send_buffer,
@@ -390,7 +390,7 @@ int main()
 		// We get here whether there was a packet or a timeout
 		send_length = PICOQUIC_MAX_PACKET_SIZE;
 		while(send_length > 0) {
-			sleep(5); // add a delay make sure the configuration updates
+			//sleep(5); // add a delay make sure the configuration updates
 			// Send out all packets waiting to go
 			pthread_mutex_lock(&conf.lock);
 			printf("Locking \n");
